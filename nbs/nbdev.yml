@@ -1,0 +1,9 @@
+project:
+  output-dir: _docs
+
+website:
+  title: "solveit_client"
+  site-url: "https://AnswerDotAI.github.io/solveit_client"
+  description: ""
+  repo-branch: main
+  repo-url: "https://github.com/AnswerDotAI/solveit_client"
