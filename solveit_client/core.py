@@ -68,12 +68,6 @@ class Message:
         out = (self.output[:50] + '...') if len(self.output or '') > 50 else (self.output or '')
         return f"<b>Message:</b> <a href='{self.link}' target='_blank'><code>{self.id}</code></a> | <b>Type:</b> {self.msg_type} | <code>{preview}</code> | <b>Output:</b> <code>{out}</code>"
 
-# %% ../nbs/00_core.ipynb #a8ea27d4
-@patch
-def add_msg(self:Dialog, content, msg_type='code', placement='at_end'):
-    mid = self.cli('/add_relative_', dlg_name=self.name, content=content, msg_type=msg_type, placement=placement)
-    return Message(mid, self)
-
 # %% ../nbs/00_core.ipynb #b0a4a828
 class Messages(list):
     def __init__(self, msgs, dlg):
