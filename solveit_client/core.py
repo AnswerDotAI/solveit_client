@@ -38,8 +38,8 @@ class Dialog:
     def __repr__(self): return f"Dialog('{self.name}', mode={self.mode})"
     @property
     def link(self): return f'{self.cli.url}dialog_?name={self.name}'
-    def _repr_html_(self): 
-        return f"<b>Dialog:</b> <a href='{self.link}' target='_blank'><code>{self.name}</code></a> | <b>Mode:</b> {self.mode}"
+    def _repr_markdown_(self): 
+        return f"**Dialog:** <a href='{self.link}' target='_blank'>`{self.name}`</a> | **Mode:** {self.mode}"
 
 # %% ../nbs/00_core.ipynb #ddda7809
 @patch
@@ -63,10 +63,11 @@ class Message:
     def __repr__(self): return f"Message('{self.id}', type={self.msg_type})"
     @property
     def link(self): return self.dlg.link + f'#{self.id}'
-    def _repr_html_(self): 
+    def _repr_markdown_(self): 
         preview = (self.content[:50] + '...') if len(self.content or '') > 50 else self.content
         out = (self.output[:50] + '...') if len(self.output or '') > 50 else (self.output or '')
-        return f"<b>Message:</b> <a href='{self.link}' target='_blank'><code>{self.id}</code></a> | <b>Type:</b> {self.msg_type} | <code>{preview}</code> | <b>Output:</b> <code>{out}</code>"
+        return f"**Message:** <a href='{self.link}' target='_blank'>`{self.id}`</a> | **Type:** {self.msg_type} | `{preview}` | **Output:** `{out}`" 
+
 
 # %% ../nbs/00_core.ipynb #06ad2631
 @patch
@@ -80,18 +81,32 @@ class Messages(list):
     def __init__(self, msgs, dlg):
         super().__init__(Message(m['id'], dlg, m) for m in msgs)
     def _repr_html_(self):
-        rows = ''.join(f"<tr><td><a href='{m.link}' target='_blank'><code>{m.id}</code></a></td><td>{m.msg_type}</td><td>{(m.content or '')[:40]}</td><td>{(m.output or '')[:40]}</td></tr>" for m in self)
-        return f"<table style='border-collapse:collapse'><tr><th style='padding:4px 12px;text-align:left'>ID</th><th style='padding:4px 12px;text-align:left'>Type</th><th style='padding:4px 12px;text-align:left'>Content</th><th style='padding:4px 12px;text-align:left'>Output</th></tr>{rows.replace('<td>', '<td style=\"padding:4px 12px\">')}</table>"
-
-# %% ../nbs/00_core.ipynb #e84bed01
-@patch(as_prop=True)
-def messages(self:Dialog):
-    return Messages(self.cli('/find_msgs_', dlg_name=self.name)['msgs'], self)
+        rows = ''.join(
+            f"<tr><td><a href='{m.link}' target='_blank'><code>{m.id}</code></a></td>"
+            f"<td>{m.msg_type}</td><td>{(m.content or '')[:40]}</td><td>{(m.output or '')[:40]}</td></tr>" for m in self)
+        return ('<div style="overflow-x:auto"><table style="border-collapse:collapse;width:100%">'
+                '<tr><th>ID</th><th>Type</th><th>Content</th><th>Output</th></tr>'
+                f'{rows}</table></div>').replace('<td>', '<td style="padding:6px 14px">').replace('<th>', '<th style="padding:6px 14px;text-align:left">')
 
 # %% ../nbs/00_core.ipynb #9332a294
 @patch
 def find_msgs(self:Dialog, re_pattern=None, **kwargs):
     return Messages(self.cli('/find_msgs_', dlg_name=self.name, re_pattern=re_pattern, **kwargs)['msgs'], self)
+
+# %% ../nbs/00_core.ipynb #2c1d4d65
+@patch(as_prop=True)
+def messages(self:Dialog): return self.find_msgs()
+
+# %% ../nbs/00_core.ipynb #720fade1
+@patch
+def to_xml(self:Dialog,msg_type:str=None, # optional limit by message type ('code', 'note', or 'prompt')
+    nums:bool=False, # Whether to show line numbers
+    include_output:bool=False, # Include output in returned dict?
+    trunc_out:bool=True, # Middle-out truncate code output to 100 characters (only applies if `include_output`)?
+    trunc_in:bool=False, # Middle-out truncate cell content to 80 characters?
+):
+    return self.cli('/find_msgs_', dlg_name=self.name, as_xml=True, nums=nums, include_meta=False,
+                    msg_type=msg_type, include_output=include_output, trunc_out=trunc_out, trunc_in=trunc_in)
 
 # %% ../nbs/00_core.ipynb #87cb7387
 @patch
