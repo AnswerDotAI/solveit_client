@@ -68,6 +68,13 @@ class Message:
         out = (self.output[:50] + '...') if len(self.output or '') > 50 else (self.output or '')
         return f"<b>Message:</b> <a href='{self.link}' target='_blank'><code>{self.id}</code></a> | <b>Type:</b> {self.msg_type} | <code>{preview}</code> | <b>Output:</b> <code>{out}</code>"
 
+# %% ../nbs/00_core.ipynb #06ad2631
+@patch
+def add_msg(self:Dialog, content, msg_type='code', placement='at_end', heading_collapsed=0, i_collapsed=0, o_collapsed=0):
+    mid = self.cli( '/add_relative_', dlg_name=self.name, content=content, msg_type=msg_type, placement=placement,
+                    heading_collapsed=heading_collapsed, i_collapsed=i_collapsed, o_collapsed=o_collapsed)
+    return Message(mid, self)
+
 # %% ../nbs/00_core.ipynb #b0a4a828
 class Messages(list):
     def __init__(self, msgs, dlg):
@@ -80,6 +87,17 @@ class Messages(list):
 @patch(as_prop=True)
 def messages(self:Dialog):
     return Messages(self.cli('/find_msgs_', dlg_name=self.name)['msgs'], self)
+
+# %% ../nbs/00_core.ipynb #9332a294
+@patch
+def find_msgs(self:Dialog, re_pattern=None, **kwargs):
+    return Messages(self.cli('/find_msgs_', dlg_name=self.name, re_pattern=re_pattern, **kwargs)['msgs'], self)
+
+# %% ../nbs/00_core.ipynb #87cb7387
+@patch
+def toggle_header(self:Dialog, re_pattern):
+    msgs = self.find_msgs(re_pattern=re_pattern)
+    if msgs: self.cli('/toggle_header_collapse_', dlg_name=self.name, id_=msgs[0].id)
 
 # %% ../nbs/00_core.ipynb #5713ef88
 @patch
