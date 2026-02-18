@@ -71,9 +71,9 @@ class Message:
 
 # %% ../nbs/00_core.ipynb #06ad2631
 @patch
-def add_msg(self:Dialog, content, msg_type='code', placement='at_end', heading_collapsed=0, i_collapsed=0, o_collapsed=0):
+def add_msg(self:Dialog, content, msg_type='code', placement='at_end', heading_collapsed=0, i_collapsed=0, o_collapsed=0, id=None):
     mid = self.cli( '/add_relative_', dlg_name=self.name, content=content, msg_type=msg_type, placement=placement,
-                    heading_collapsed=heading_collapsed, i_collapsed=i_collapsed, o_collapsed=o_collapsed)
+                    heading_collapsed=heading_collapsed, i_collapsed=i_collapsed, o_collapsed=o_collapsed, id_=id)
     return Message(mid, self)
 
 # %% ../nbs/00_core.ipynb #b0a4a828
@@ -137,6 +137,67 @@ def update(self:Message, **kwargs):
 def delete(self:Message):
     self.dlg.cli('/rm_msg_', dlg_name=self.dlg.name, msid=self.id, api='true')
     return self
+
+# %% ../nbs/00_core.ipynb #c6eab653
+@patch(as_prop=True)
+def num_content(self:Message):
+    self._refresh()
+    return '\n'.join(f'{i+1:4d} | {l}' for i,l in enumerate(self.content.splitlines()))
+
+@patch
+def str_replace(self:Message, old_str, new_str):
+    count = self.content.count(old_str)
+    if count == 0: raise ValueError(f"Text not found: {repr(old_str)}")
+    if count > 1: raise ValueError(f"Multiple matches ({count}): {repr(old_str)}")
+    return self.update(content=self.content.replace(old_str, new_str, 1))
+
+@patch
+def insert_line(self:Message, insert_line, new_str):
+    lines = self.content.splitlines()
+    if not (0 <= insert_line <= len(lines)): raise ValueError(f'Invalid line {insert_line}. Valid: 0-{len(lines)}')
+    lines.insert(insert_line, new_str)
+    return self.update(content='\n'.join(lines))
+
+# %% ../nbs/00_core.ipynb #94b44830
+def _norm_lines(n:int, start:int, end:int=None):
+    "Normalize and validate line range. Returns (start, end) or raises ValueError."
+    if end is None: end = start
+    if end < 0: end = n + end + 1
+    if not (1 <= start <= n): raise ValueError(f'Invalid start line {start}. Valid range: 1-{n}')
+    if not (start <= end <= n): raise ValueError(f'Invalid end line {end}. Valid range: {start}-{n}')
+    return start, end
+
+@patch
+def strs_replace(self:Message, old_strs:list, new_strs:list):
+    if len(old_strs) != len(new_strs): raise ValueError(f"Length mismatch: {len(old_strs)} vs {len(new_strs)}")
+    text = self.content
+    for idx,(old,new) in enumerate(zip(old_strs, new_strs)):
+        count = text.count(old)
+        if count == 0: raise ValueError(f"Text not found at index {idx}: {repr(old)}")
+        if count > 1: raise ValueError(f"Multiple matches ({count}) at index {idx}: {repr(old)}")
+        text = text.replace(old, new, 1)
+    return self.update(content=text)
+
+@patch
+def replace_lines(self:Message, start_line:int, end_line:int=None, new_content:str=''):
+    lines = self.content.splitlines(keepends=True)
+    s,e = _norm_lines(len(lines), start_line, end_line)
+    if lines and new_content and not new_content.endswith('\n'): new_content += '\n'
+    lines[s-1:e] = [new_content] if new_content else []
+    return self.update(content=''.join(lines))
+
+@patch
+def del_lines(self:Message, start_line:int, end_line:int=None):
+    lines = self.content.splitlines(keepends=True)
+    s,e = _norm_lines(len(lines), start_line, end_line)
+    del lines[s-1:e]
+    return self.update(content=''.join(lines))
+
+# %% ../nbs/00_core.ipynb #702af346
+@patch
+def read_msg(self:Dialog, n=0, id=None):
+    data = self.cli('/read_msg_', dlg_name=self.name, id_=id or find_msg_id(), n=n, relative=True)
+    return Message(data['id'], self, data)
 
 # %% ../nbs/00_core.ipynb #69999e1b
 @patch
