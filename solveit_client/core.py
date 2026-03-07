@@ -72,9 +72,10 @@ class Message:
 # %% ../nbs/00_core.ipynb #06ad2631
 @patch
 def add_msg(self:Dialog, content, msg_type='code', placement='at_end', heading_collapsed=0, i_collapsed=0, o_collapsed=0, id=None):
-    mid = self.cli( '/add_relative_', dlg_name=self.name, content=content, msg_type=msg_type, placement=placement,
+    res = self.cli( '/add_relative_', dlg_name=self.name, content=content, msg_type=msg_type, placement=placement,
                     heading_collapsed=heading_collapsed, i_collapsed=i_collapsed, o_collapsed=o_collapsed, id_=id)
-    return Message(mid, self)
+    if 'error' in res: raise Exception(res['error'])
+    return Message(res['id'], self)
 
 # %% ../nbs/00_core.ipynb #b0a4a828
 class Messages(list):
@@ -128,9 +129,10 @@ def exec(self:Message, timeout=30, poll_interval=0.2):
 @patch
 def update(self:Message, **kwargs):
     if 'msg_type' in kwargs: kwargs.setdefault('output', '')
-    self.dlg.cli('/update_msg_', dlg_name=self.dlg.name, id_=self.id, **kwargs)
+    res = self.dlg.cli('/update_msg_', dlg_name=self.dlg.name, id_=self.id, log_changed=True, **kwargs)
+    if 'error' in res: raise Exception(res['error'])
     self._refresh()
-    return self
+    return self, res.get('diff')
 
 # %% ../nbs/00_core.ipynb #7932f6d8
 @patch
