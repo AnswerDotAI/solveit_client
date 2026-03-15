@@ -198,7 +198,7 @@ def del_lines(self:Message, start_line:int, end_line:int=None):
 # %% ../nbs/00_core.ipynb #702af346
 @patch
 def read_msg(self:Dialog, n=0, id=None):
-    data = self.cli('/read_msg_', dlg_name=self.name, id_=id or find_msg_id(), n=n, relative=True)
+    data = self.cli('/read_msg_', dlg_name=self.name, id_=id, n=n, relative=True)
     return Message(data['id'], self, data)
 
 # %% ../nbs/00_core.ipynb #69999e1b
