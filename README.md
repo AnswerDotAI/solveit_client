@@ -28,10 +28,15 @@ export SOLVEIT_TOKEN='your-token-here'
 
 ## Quick Start
 
+[`SolveItClient()`](https://AnswerDotAI.github.io/solveit_client/core.html#solveitclient)
+defaults to `http://localhost:5001` when neither a URL argument nor
+`SOLVEIT_URL` is set. Pass a URL explicitly for hosted SolveIt
+instances.
+
 ``` python
 from solveit_client.core import *
 
-# Initialize client (uses SOLVEIT_TOKEN env var by default)
+# Initialize client (explicit URL shown here; defaults to http://localhost:5001 if omitted)
 sic = SolveItClient('https://your-instance.solve.it.com/'); sic
 ```
 
@@ -108,3 +113,26 @@ dlg.delete()
 ```
 
     {'success': 'deleted "/app/data/my-project/experiment"'}
+
+## CLI
+
+The package also installs `sic` and `completion-sic` for shell and agent
+workflows. The CLI is JSON-first, uses `http://localhost:5001` by
+default when no URL is supplied, and supports regex search, message
+editing, execution, and Bash completion.
+
+``` bash
+sic dialog find CRAFT '^# '
+sic msg read CRAFT --msg_id _733cf1be
+sic msg replace-lines CRAFT _733cf1be 3 'print(x + y)'
+sic msg exec CRAFT _733cf1be
+eval "$(completion-sic --install)"
+```
+
+## Agent Skill
+
+This repository includes a root `SKILL.md` that documents how an agent
+should use `sic`. The recommended loop is: discover with `dialog find`
+or `dialog msgs`, read the target with `msg read`, make one small edit
+with `msg str-replace`, `msg insert-line`, `msg replace-lines`, or
+`msg del-lines`, then verify with `msg exec` or another read.

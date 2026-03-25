@@ -12,9 +12,10 @@ import httpx, os, time
 
 # %% ../nbs/00_core.ipynb #34184ad1
 class SolveItClient:
-    def __init__(self, url, token=None):
-        self.url, self.token = url, token or os.environ['SOLVEIT_TOKEN']
-        self.cli = httpx.Client(base_url=url, cookies={'_solveit': self.token}, headers={'Accept': 'application/json'})
+    def __init__(self, url=None, token=None):
+        url = url or os.environ.get('SOLVEIT_URL') or 'http://localhost:5001'
+        self.url, self.token = url.rstrip('/') + '/', token or os.environ['SOLVEIT_TOKEN']
+        self.cli = httpx.Client(base_url=self.url, cookies={'_solveit': self.token}, headers={'Accept': 'application/json'})
     
     def __call__(self, path, **data):
         res = self.cli.post(path, data=data)
@@ -22,6 +23,16 @@ class SolveItClient:
         except: return res.text
     
     def __repr__(self): return f'SolveItClient({self.url=})'
+
+# %% ../nbs/00_core.ipynb #cli-resp-err
+def _resp_err(res):
+    if isinstance(res, dict) and 'error' in res:
+        err = res['error']
+        if isinstance(err, str) and err.startswith('Failed to access ') and '. Does it exist?' in err:
+            dlg_name = err[len('Failed to access '):].split(' in ', 1)[0]
+            raise Exception(f'Dialog not found: {dlg_name}')
+        raise Exception(err)
+    return res
 
 # %% ../nbs/00_core.ipynb #bd1bbb3c
 class Dialog:
@@ -44,7 +55,7 @@ class Dialog:
 # %% ../nbs/00_core.ipynb #ddda7809
 @patch
 def create_dialog(self:SolveItClient, dlg_nm):
-    self('/create_dialog_', name=dlg_nm, api=True)
+    _resp_err(self('/create_dialog_', name=dlg_nm, api=True))
     return Dialog(dlg_nm, self)
 
 # %% ../nbs/00_core.ipynb #254216c9
@@ -92,7 +103,8 @@ class Messages(list):
 # %% ../nbs/00_core.ipynb #9332a294
 @patch
 def find_msgs(self:Dialog, re_pattern=None, **kwargs):
-    return Messages(self.cli('/find_msgs_', dlg_name=self.name, re_pattern=re_pattern, **kwargs)['msgs'], self)
+    res = _resp_err(self.cli('/find_msgs_', dlg_name=self.name, re_pattern=re_pattern, **kwargs))
+    return Messages(res['msgs'], self)
 
 # %% ../nbs/00_core.ipynb #2c1d4d65
 @patch(as_prop=True)
@@ -198,7 +210,7 @@ def del_lines(self:Message, start_line:int, end_line:int=None):
 # %% ../nbs/00_core.ipynb #702af346
 @patch
 def read_msg(self:Dialog, n=0, id=None):
-    data = self.cli('/read_msg_', dlg_name=self.name, id_=id, n=n, relative=True)
+    data = _resp_err(self.cli('/read_msg_', dlg_name=self.name, id_=id, n=n, relative=True))
     return Message(data['id'], self, data)
 
 # %% ../nbs/00_core.ipynb #69999e1b
