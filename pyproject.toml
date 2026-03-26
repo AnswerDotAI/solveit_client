@@ -26,7 +26,6 @@ solveit_client = "solveit_client._modidx:d"
 
 [project.scripts]
 sic = "solveit_client.cli:sic"
-completion-sic = "solveit_client.cli:completion_sic"
 
 [tool.setuptools.dynamic]
 version = {attr = "solveit_client.__version__"}

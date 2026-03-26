@@ -1,48 +1,109 @@
 ---
-name: solveit-cli
-description: Use this skill when you need to inspect, search, edit, or execute SolveIt dialogs from the terminal with the `sic` CLI. It is for agent-driven dialog work, especially regex search, message reads, incremental edits, and code execution inside an existing SolveIt dialog.
+description: Use the solveit_client CLI (`sic`) to interact with SolveIt dialogs, messages, and the API client from the command line or scripts. Trigger when working with SolveIt automation, dialog management, or message manipulation outside of Python.
 ---
 
-# SolveIt CLI
+# solveit_client CLI (`sic`)
 
-Use `sic` for dialog work that should stay machine-readable and scriptable. Prefer it over ad hoc HTTP calls.
+A CLI that maps directly to the `solveit_client` Python API. Every operation follows the pattern:
 
-## Preconditions
+```bash
+sic <namespace>.<method> [positional_args] [--kwarg value]
+```
 
-- Ensure `sic` is installed and runnable.
-- Set `SOLVEIT_TOKEN`. `SOLVEIT_URL` is optional; if omitted, `sic` defaults to `http://localhost:5001`.
-- Default output is JSON. Add `--pretty` only when inspecting manually.
-- Current `fastcore.script` flags use underscores, not hyphens, for command-specific options such as `--msg_type` and `--msg_id`.
+## Namespaces
 
-## Default Workflow
+| Namespace | Object | Required flags |
+|-----------|--------|----------------|
+| `client` | `SolveItClient` | (none beyond auth) |
+| `dialog` | `Dialog` | `--name` or `SOLVEIT_DIALOG` |
+| `message` | `Message` | `--name` + `--id` |
 
-Start read-only, then mutate incrementally.
+## Auth & env vars
 
-1. Find the dialog area you need.
-   Example: `sic --url http://localhost:6001 dialog find CRAFT '^# '`
-2. Read the target message or list the dialog.
-   Example: `sic --url http://localhost:6001 msg read CRAFT --msg_id _733cf1be`
-   Example: `sic --url http://localhost:6001 dialog msgs CRAFT`
-3. Apply one small edit at a time.
-   Example: `sic --url http://localhost:6001 msg str-replace CRAFT _733cf1be 'old' 'new'`
-   Example: `sic --url http://localhost:6001 msg replace-lines CRAFT _733cf1be 3 'print(x + y)'`
-4. Re-read or execute immediately after each change.
-   Example: `sic --url http://localhost:6001 msg exec CRAFT _733cf1be`
+Flags can be omitted if the corresponding env var is set:
 
-## High-Value Commands
+| Flag | Env var | Purpose |
+|------|---------|---------|
+| `--url` | `SOLVEIT_URL` | Server URL (default: `http://localhost:5001`) |
+| `--token` | `SOLVEIT_TOKEN` | Auth token (default: `dummy`, which works for localhost) |
+| `--name` | `SOLVEIT_DIALOG` | Dialog name (for `dialog.*` and `message.*`) |
 
-- `dialog find`: primary discovery tool; use regex to jump to headings, sections, or known phrases.
-- `dialog msgs`: best full-dialog snapshot.
-- `msg read`: fetch one message by id or relative offset.
-- `msg add`: add `note`, `code`, `prompt`, or `raw` messages.
-- `msg insert-line`, `msg replace-lines`, `msg del-lines`, `msg str-replace`: preferred edit loop.
-- `dialog xml`: compact context export when XML is easier to feed into another step.
-- `raw`: escape hatch for unsupported routes.
+## Output
 
-## Guardrails
+All command output is JSON (pipe to `jq` for formatting). Return types:
 
-- Prefer `dialog find` before `msg read` when you do not already know the message id.
-- Keep edits incremental; do not batch many unrelated changes into one command.
-- Trust the returned `diff` after edit commands and the returned `output` after `msg exec`.
-- Missing dialogs surface as `Dialog not found: <name>`.
-- If you need completion for manual work, use `completion-sic --install`.
+- **Dialog** → `{"name": "...", "mode": "..."}`
+- **Message** → `{"id": "...", "msg_type": "...", "content": "...", "output": "..."}`
+- **Messages** (list) → array of message objects
+- **MsgDiff** (from update/replace ops) → message fields + `"diff": "..."`
+
+## Message Types
+
+Common `msg_type` values for `dialog.add_msg`:
+
+- `code`: Python/code cells you want SolveIt to run. Add the message, then call `sic message.exec --name <dialog> --id <msg_id>` to execute it and populate `output`.
+- `note`: Non-executable text for headings, instructions, scratch notes, or context you want saved in the dialog without being run.
+- `prompt`: A request for SolveIt AI. Adding the message only creates the prompt cell; the AI does not answer until you explicitly run `sic message.exec --name <dialog> --id <msg_id>`.
+- `raw`: Low-level/plain content when you want to avoid the usual code/note/prompt semantics.
+
+Typical prompt flow:
+
+```bash
+sic dialog.add_msg 'Reply with a short hello.' --name myproject --msg_type prompt
+sic message.exec --name myproject --id _abc123
+```
+
+Before `message.exec`, a prompt message may show a pending placeholder output. After `message.exec`, `output` contains the AI response.
+
+## Help system
+
+```bash
+sic                          # list namespaces
+sic dialog --help            # list all dialog methods
+sic dialog.add_msg --help    # show method signature and param docs
+```
+
+## Examples
+
+```bash
+# Create a dialog
+sic client.create_dialog --name myproject
+
+# Add a note
+sic dialog.add_msg 'Hello world' --name myproject --msg_type note
+
+# List messages
+sic dialog.messages --name myproject
+
+# Execute a code cell
+sic message.exec --name myproject --id _abc123
+
+# Add a prompt, then execute it to get the AI response
+sic dialog.add_msg 'Summarize this dialog so far.' --name myproject --msg_type prompt
+sic message.exec --name myproject --id _prompt123
+
+# Update message content
+sic message.update --name myproject --id _abc123 --content 'new content'
+
+# Delete a dialog
+sic dialog.delete --name myproject
+
+# With env vars set, much shorter:
+export SOLVEIT_URL=http://localhost:6001
+export SOLVEIT_TOKEN=mytoken
+export SOLVEIT_DIALOG=myproject
+
+sic dialog.add_msg '1+1'
+sic dialog.messages
+sic message.exec --id _abc123
+```
+
+## Gotchas
+
+- `--help` are boolean flags (no value after them); all other `--flags` expect a value
+- Properties like `dialog.messages` take no positional args — just namespace flags
+- `message.*` operations always need both `--name` and `--id`
+- `dialog.add_msg --msg_type prompt` does not itself trigger the AI; you must run `sic message.exec` on that prompt message to get a response
+- In the current client, localhost still effectively needs a non-empty `SOLVEIT_TOKEN`.
+- Dialog names can contain `/` for folder structure (e.g. `myproject/notebooks/analysis`)
+- The `--name` flag is consumed by object construction for `dialog.*`/`message.*`, but passed through as a method arg for `client.*` (e.g. `client.create_dialog --name foo`)
