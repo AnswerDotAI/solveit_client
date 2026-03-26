@@ -15,7 +15,7 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
 ]
-dependencies = []
+dependencies = ["fastcore", "httpx"]
 
 [project.urls]
 Repository = "https://github.com/AnswerDotAI/solveit_client"
@@ -23,6 +23,9 @@ Documentation = "https://AnswerDotAI.github.io/solveit_client/"
 
 [project.entry-points.nbdev]
 solveit_client = "solveit_client._modidx:d"
+
+[project.scripts]
+sic = "solveit_client.cli:sic"
 
 [tool.setuptools.dynamic]
 version = {attr = "solveit_client.__version__"}

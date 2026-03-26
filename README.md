@@ -28,10 +28,15 @@ export SOLVEIT_TOKEN='your-token-here'
 
 ## Quick Start
 
+[`SolveItClient()`](https://AnswerDotAI.github.io/solveit_client/core.html#solveitclient)
+defaults to `http://localhost:5001` when neither a URL argument nor
+`SOLVEIT_URL` is set. Pass a URL explicitly for hosted SolveIt
+instances.
+
 ``` python
 from solveit_client.core import *
 
-# Initialize client (uses SOLVEIT_TOKEN env var by default)
+# Initialize client (explicit URL shown here; defaults to http://localhost:5001 if omitted)
 sic = SolveItClient('https://your-instance.solve.it.com/'); sic
 ```
 
@@ -108,3 +113,116 @@ dlg.delete()
 ```
 
     {'success': 'deleted "/app/data/my-project/experiment"'}
+
+## CLI
+
+The
+[`sic`](https://AnswerDotAI.github.io/solveit_client/cli_dup2.html#sic)
+command gives you shell access to the same operations available in the
+Python API. It uses the `SOLVEIT_URL` and `SOLVEIT_TOKEN` environment
+variables (same as the Python client).
+
+Set `SOLVEIT_URL` and `SOLVEIT_TOKEN` to avoid passing `--url` and
+`--token` on every call. You can also set `SOLVEIT_DIALOG` to skip
+`--name`:
+
+``` bash
+export SOLVEIT_URL='https://your-instance.solve.it.com/' # defaults to http://localhost:5001
+export SOLVEIT_TOKEN='your-token-here' # defaults to dummy, which works only for localhost
+export SOLVEIT_DIALOG='my-project/experiment'
+```
+
+Run
+[`sic`](https://AnswerDotAI.github.io/solveit_client/cli_dup2.html#sic)
+with no arguments to see available namespaces:
+
+``` python
+!sic
+```
+
+    Usage: sic <operation> [args]
+
+     client     SolveIt API client
+     dialog     Dialog operations
+     message    Message operations
+
+List available methods on a namespace with `--help`:
+
+``` python
+!sic dialog --help
+```
+
+    Usage: sic dialog.<method> [args]
+
+      add_msg         Add a new message to the dialog and return it.
+      delete          Delete this dialog.
+      find_msgs       Find messages matching `re_pattern` and return as `Messages`.
+      link            Link to the dialog.
+      messages        All messages in this dialog.
+      read_msg        Read a single message by index `n` or `id` and return a `Message`.
+      reset           Reset the dialog instance.
+      run_all         Run all code messages in the dialog from top to bottom.
+      stop            Stop the dialog kernel.
+      to_xml          Return dialog messages as an XML string.
+      toggle_header   Toggle the header collapse state of the first message matching `re_pattern`.
+
+Get help on a specific method:
+
+``` python
+!sic dialog.to_xml --help
+```
+
+    Return dialog messages as an XML string.
+
+      --msg_type             optional limit by message type ('code', 'note', or 'prompt')
+      --nums                 Whether to show line numbers
+      --include_output       Include output in returned dict?
+      --trunc_out            Middle-out truncate code output to 100 characters (only applies if `include_output`)?
+      --trunc_in             Middle-out truncate cell content to 80 characters?
+
+Create a dialog and add messages:
+
+``` python
+!sic client.create_dialog --name tmp/cli_demo
+```
+
+    {"name": "tmp/cli_demo", "mode": "learning"}
+
+``` python
+!sic dialog.add_msg '1 + 1' --name tmp/cli_demo
+```
+
+    {"id": "_8bd98af1", "msg_type": "code", "content": "1 + 1", "output": ""}
+
+``` python
+!sic dialog.add_msg 'Hello from the CLI!' --name tmp/cli_demo --msg_type prompt
+```
+
+    {"id": "_a6398f51", "msg_type": "prompt", "content": "Hello from the CLI!", "output": "<output result=\"pending\" reason=\"incomplete\"/>"}
+
+``` python
+!sic message.exec --name tmp/cli_demo --id _a6398f51
+```
+
+    {"id": "_a6398f51", "msg_type": "prompt", "content": "Hello from the CLI!", "output": "Hey! \ud83d\udc4b What can I help you with?\n\n<details class='token-usage-details'><summary>$0.0152</summary>\n\n`total=16,027 | in=16,011 | out=16 | cached=97.8% | cache_new=122 | $0.0152`\n\n</details>"}
+
+List all messages in a dialog:
+
+``` python
+!sic dialog.messages --name tmp/cli_demo
+```
+
+    [{"id": "_a0e3ddf8", "msg_type": "code", "content": "1 + 1", "output": ""}, {"id": "_84d8d761", "msg_type": "note", "content": "Hello from the CLI!", "output": ""}, {"id": "_4a7059d5", "msg_type": "prompt", "content": "Hello from the CLI!", "output": "Hey there! \ud83d\udc4b What are you working on today?\n\n<details class='token-usage-details'><summary>$0.0489</summary>\n\n`total=15,941 | in=15,924 | out=17 | cached=73.2% | cache_new=4,012 | $0.0489`\n\n</details>"}]
+
+Clean up:
+
+``` python
+!sic dialog.delete --name tmp/cli_demo
+```
+
+    {"success": "deleted \"/home/natedawg/tmp/cli_demo\""}
+
+# SolveIt Client Skill
+
+We provide a SKILL.md for use in coding agents to give them context
+about how to use the SolveIt Client cli.
