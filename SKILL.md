@@ -104,6 +104,5 @@ sic message.exec --id _abc123
 - Properties like `dialog.messages` take no positional args — just namespace flags
 - `message.*` operations always need both `--name` and `--id`
 - `dialog.add_msg --msg_type prompt` does not itself trigger the AI; you must run `sic message.exec` on that prompt message to get a response
-- In the current client, localhost still effectively needs a non-empty `SOLVEIT_TOKEN`.
 - Dialog names can contain `/` for folder structure (e.g. `myproject/notebooks/analysis`)
 - The `--name` flag is consumed by object construction for `dialog.*`/`message.*`, but passed through as a method arg for `client.*` (e.g. `client.create_dialog --name foo`)

@@ -23,7 +23,7 @@ def _parse_args(a):
         x = a[i]
         if x[:2]=='--':
             k = x[2:]
-            if k in ('help','debug'): y = 1
+            if k=='help': y = 1
             else:
                 i += 1
                 y = a[i]
@@ -50,6 +50,7 @@ def _resolve(op, kws):
     parts = op.split('.')
     nm = parts[0]
     mthd = parts[1] if len(parts) > 1 else None
+    if nm not in _ns_map: raise ValueError(f"Unknown namespace '{nm}'. Choose from: {', '.join(_ns_map)}")
     if not mthd: return _ns_map[nm], kws
     elif mthd and 'help' in kws:
         cls = _ns_map[nm]
@@ -71,7 +72,10 @@ def sic_cli(a):
     op, pos, kw = _parse_args(a)
     if not op: return 'Usage: sic <operation> [args]\n\n' + '\n'.join([ f" {nm:10s} {cls.__doc__}"
                                                                         for nm, cls in _ns_map.items()])
-    obj, kw = _resolve(op, kw)
+    try: obj, kw = _resolve(op, kw)
+    except (ValueError, AttributeError) as e:
+        print(str(e), file=sys.stderr)
+        return sys.exit(1)
     if obj in _ns_map.values():
         mems = L(inspect.getmembers(obj, lambda x: callable(x) or isinstance(x, property))).filter(lambda x: not x[0].startswith('_'))
         lines = [f"  {name:15s} {func.__doc__ or ''}" for name, func in mems]
