@@ -13,7 +13,7 @@ from .core import *
 
 import inspect,json,sys
 
-# %% ../nbs/01_cli.ipynb #c49970a9
+# %% ../nbs/01_cli.ipynb #54afa532
 def _parse_args(a):
     "Extract positional and keyword arguments from `a`=`sys.argv`"
     pos,kw = [],{}
@@ -23,10 +23,10 @@ def _parse_args(a):
         x = a[i]
         if x[:2]=='--':
             k = x[2:]
-            if k=='help': y = 1
-            else:
+            if i+1 < len(a) and not a[i+1].startswith('--'):
                 i += 1
                 y = a[i]
+            else: y = True
             kw[k] = y
         else: pos.append(a[i])
         i += 1
