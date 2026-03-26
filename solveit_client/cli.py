@@ -55,9 +55,7 @@ def _resolve(op, kws):
         cls = _ns_map[nm]
         if mthd not in dir(cls): raise AttributeError(f"'{nm}' has no method '{mthd}'")
         return getattr(cls, mthd), kws
-    url = kws.pop('url', os.environ.get('SOLVEIT_URL', 'http://localhost:5001'))
-    tok = kws.pop('token', os.environ.get('SOLVEIT_TOKEN', ''))
-    sic = SolveItClient(url, tok)
+    sic = SolveItClient(kws.pop('url', None), kws.pop('token', None))
     if nm=='client': obj = sic
     else:
         dlg = Dialog(kws.pop('name', os.environ.get('SOLVEIT_DIALOG')), sic)

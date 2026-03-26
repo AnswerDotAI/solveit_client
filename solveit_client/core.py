@@ -16,7 +16,7 @@ class SolveItClient:
     "SolveIt API client"
     def __init__(self, url=None, token=None):
         url = url or os.environ.get('SOLVEIT_URL') or 'http://localhost:5001'
-        self.url, self.token = url.rstrip('/') + '/', token or os.environ['SOLVEIT_TOKEN']
+        self.url, self.token = url.rstrip('/') + '/', token or os.environ.get('SOLVEIT_TOKEN', 'dummy')
         self.cli = httpx.Client(base_url=self.url, cookies={'_solveit': self.token}, headers={'Accept': 'application/json'})
     
     def __call__(self, path, **data):
