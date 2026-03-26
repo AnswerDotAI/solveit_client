@@ -96,7 +96,7 @@ def add_msg(self:Dialog, content, msg_type='code', placement='at_end', heading_c
     "Add a new message to the dialog and return it."
     res = self.cli( '/add_relative_', dlg_name=self.name, content=content, msg_type=msg_type, placement=placement,
                     heading_collapsed=heading_collapsed, i_collapsed=i_collapsed, o_collapsed=o_collapsed, id_=id)
-    if 'error' in res: raise Exception(res['error'])
+    res = _resp_err(res)
     return Message(res['id'], self)
 
 # %% ../nbs/00_core.ipynb #b0a4a828
@@ -162,7 +162,7 @@ def update(self:Message, **kwargs):
     "Update message fields and return a `MsgDiff` with the change."
     if 'msg_type' in kwargs: kwargs.setdefault('output', '')
     res = self.dlg.cli('/update_msg_', dlg_name=self.dlg.name, id_=self.id, log_changed=True, **kwargs)
-    if 'error' in res: raise Exception(res['error'])
+    _resp_err(res)
     self._refresh()
     return MsgDiff(self, res.get('diff'))
 
