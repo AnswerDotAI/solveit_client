@@ -34,3 +34,4 @@ version = {attr = "solveit_client.__version__"}
 include = ["solveit_client"]
 
 [tool.nbdev]
+allowed_cell_metadata_keys = ["solveit_ai"]
