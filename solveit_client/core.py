@@ -14,10 +14,12 @@ import httpx, os, time
 # %% ../nbs/00_core.ipynb #34184ad1
 class SolveItClient:
     "SolveIt API client"
-    def __init__(self, url=None, token=None):
+    def __init__(self, url=None, token=None, timeout=30):
         url = url or os.environ.get('SOLVEIT_URL') or 'http://localhost:5001'
         self.url, self.token = url.rstrip('/') + '/', token or os.environ.get('SOLVEIT_TOKEN', 'dummy')
-        self.cli = httpx.Client(base_url=self.url, cookies={'_solveit': self.token}, headers={'Accept': 'application/json'})
+        self.cli = httpx.Client(base_url=self.url, timeout=timeout,
+                                cookies={'_solveit': self.token},
+                                headers={'Accept': 'application/json'})
     
     def __call__(self, path, **data):
         res = self.cli.post(path, data=data)
