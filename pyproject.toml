@@ -24,6 +24,9 @@ Documentation = "https://AnswerDotAI.github.io/solveit_client/"
 [project.entry-points.nbdev]
 solveit_client = "solveit_client._modidx:d"
 
+[project.entry-points.pyskills]
+solveit_client = "solveit_client.skill"
+
 [project.scripts]
 sic = "solveit_client.cli:sic"
 
