@@ -1,0 +1,102 @@
+[
+  {
+    "objectID": "core.html",
+    "href": "core.html",
+    "title": "core",
+    "section": "",
+    "text": "SolveItClient is our main entry point. It wraps an httpx.Client with authentication and JSON handling. The __call__ method handles both JSON and plain text responses automatically.\nsource",
+    "crumbs": [
+      "core"
+    ]
+  },
+  {
+    "objectID": "core.html#message-operations",
+    "href": "core.html#message-operations",
+    "title": "core",
+    "section": "Message Operations",
+    "text": "Message Operations\nMessages support CRUD operations via the REST API.\n\nmsg = msgs[0]; msg\n\nMessage: _7e22d2f4 | Type: prompt | Hi, how are you? | Output: Hey! I'm doing great, thanks for asking 😊 How abou...\n\n\n\nsource\n\nMessage.exec\ndef exec(\n    timeout:int=30, poll_interval:float=0.2\n):\nExecute this message and poll until completion or timeout.\n\nmsg.exec(); msg\n\nMessage: _7e22d2f4 | Type: prompt | Hi, how are you? | Output: &lt;output result=\"pending\" reason=\"incomplete\"/&gt;\n\n\n\nai_msg = dlg.add_msg('Hi, how are you?', msg_type='prompt'); ai_msg\n\nMessage: _8e20efac | Type: prompt | Hi, how are you? | Output: &lt;output result=\"pending\" reason=\"incomplete\"/&gt;\n\n\n\nai_msg.exec(); ai_msg\n\nMessage: _8e20efac | Type: prompt | Hi, how are you? | Output: &lt;output result=\"pending\" reason=\"incomplete\"/&gt;\n\n\n\nsource\n\n\nMessage.update\ndef update(\n    **kwargs\n):\nUpdate message fields and return a MsgDiff with the change.\n\nmsg.update(content='2+2')\n\nMsgDiff(msg=Message('_7e22d2f4', type=prompt), diff='@@ -1 +1 @@\\n-Hi, how are you?\\n+2+2')\n\n\n\nmsg.exec(); msg\n\nMessage: _7e22d2f4 | Type: prompt | 2+2 | Output: &lt;output result=\"pending\" reason=\"incomplete\"/&gt;\n\n\n\nsource\n\n\nMessage.delete\ndef delete():\nDelete this message from its dialog.\n\nmsg.delete()\n\nMessage: _7e22d2f4 | Type: prompt | 2+2 | Output: &lt;output result=\"pending\" reason=\"incomplete\"/&gt;\n\n\n\ndlg.messages",
+    "crumbs": [
+      "core"
+    ]
+  },
+  {
+    "objectID": "core.html#dialog-helper-equivalents",
+    "href": "core.html#dialog-helper-equivalents",
+    "title": "core",
+    "section": "Dialog Helper Equivalents",
+    "text": "Dialog Helper Equivalents\n\nsource\n\nMessage.insert_line\ndef insert_line(\n    insert_line, new_str\n):\nInsert new_str at line number insert_line.\n\nsource\n\n\nMessage.str_replace\ndef str_replace(\n    old_str, new_str\n):\nReplace old_str with new_str in message content (must match exactly once).\n\nsource\n\n\nMessage.num_content\ndef num_content():\nReturn content with line numbers.\n\nsource\n\n\nMessage.del_lines\ndef del_lines(\n    start_line:int, end_line:int=None\n):\nDelete lines from start_line to end_line.\n\nsource\n\n\nMessage.replace_lines\ndef replace_lines(\n    start_line:int, end_line:int=None, new_content:str=''\n):\nReplace lines from start_line to end_line with new_content.\n\nsource\n\n\nMessage.strs_replace\ndef strs_replace(\n    old_strs:list, new_strs:list\n):\nReplace each string in old_strs with corresponding string in new_strs.\n\nsource\n\n\nDialog.read_msg\ndef read_msg(\n    n:int=0, id:NoneType=None\n):\nRead a single message by index n or id and return a Message.\n\nsource\n\n\nDialog.run_all\ndef run_all():\nRun all code messages in the dialog from top to bottom.\n\nsource\n\n\nDialog.reset\ndef reset():\nReset the dialog instance.\n\nsource\n\n\nDialog.stop\ndef stop():\nStop the dialog kernel.\n\ndlg.add_msg('print(\"I got ran!\")')\n\nMessage: _6072d578 | Type: code | print(\"I got ran!\") | Output: ``\n\n\n\ndlg.run_all(); dlg.messages\n\n\n\n\n\nID\nType\nContent\nOutput\n\n\n_800d22d1\nprompt\nHi, how are you?\nHey! I'm doing great, thanks for asking\n\n\n_6072d578\ncode\nprint(\"I got ran!\")\nI got ran!\n\n\n\n\n\n\n\nsource\n\n\nDialog.delete\ndef delete():\nDelete this dialog.\n\ndlg.delete()\n\n{'success': 'deleted \"/home/natedawg/folder/test\"'}",
+    "crumbs": [
+      "core"
+    ]
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "solveit_client",
+    "section": "",
+    "text": "A Python client for programmatically interacting with SolveIt dialogs.",
+    "crumbs": [
+      "solveit_client"
+    ]
+  },
+  {
+    "objectID": "index.html#installation",
+    "href": "index.html#installation",
+    "title": "solveit_client",
+    "section": "Installation",
+    "text": "Installation",
+    "crumbs": [
+      "solveit_client"
+    ]
+  },
+  {
+    "objectID": "index.html#authentication",
+    "href": "index.html#authentication",
+    "title": "solveit_client",
+    "section": "Authentication",
+    "text": "Authentication\nSet your SOLVEIT_TOKEN environment variable before using the client. To find your token:\n\nOpen Chrome DevTools (F12 or Cmd+Option+I)\nGo to the Application tab\nIn the sidebar, expand Cookies and select your SolveIt domain\nFind the cookie named _solveit\nCopy its value—that’s your token\n\nexport SOLVEIT_TOKEN='your-token-here'\n!pip install solveit_client",
+    "crumbs": [
+      "solveit_client"
+    ]
+  },
+  {
+    "objectID": "index.html#quick-start",
+    "href": "index.html#quick-start",
+    "title": "solveit_client",
+    "section": "Quick Start",
+    "text": "Quick Start\nSolveItClient() defaults to http://localhost:5001 when neither a URL argument nor SOLVEIT_URL is set. Pass a URL explicitly for hosted SolveIt instances.\n\nfrom solveit_client.core import *\n\n# Initialize client (explicit URL shown here; defaults to http://localhost:5001 if omitted)\nsic = SolveItClient(); sic\n\nSolveItClient(self.url='http://localhost:6001/')\n\n\nUse the /test_route to confirm your client has connect:\n\nsic('/test_route')\n\n'here'\n\n\nIf you get an error saying No access. Please login and then retry., double check your SOLVEIT_TOKEN is correct and exported.\n\n# Create a dialog\ndlg = sic.create_dialog('my-project/experiment'); dlg\n\nDialog: my-project/experiment | Mode: learning\n\n\n\n# Add and execute code\nmsg = dlg.add_msg('1 + 1'); msg\n\nMessage: _b498c3b9 | Type: code | 1 + 1 | Output: ``\n\n\n\nmsg.exec(); msg\n\nMessage: _b498c3b9 | Type: code | 1 + 1 | Output: 2\n\n\n\n# Add a prompt for AI assistance\nai_msg = dlg.add_msg('Tell me about otters 🤓', msg_type='prompt')\nai_msg.exec(); ai_msg\n\nMessage: _bf7520cb | Type: prompt | Tell me about otters 🤓 | Output: Otters are fantastic! 🦦 They're semi-aquatic mamma...\n\n\n\n# View all messages\ndlg.messages\n\n\n\n\n\nID\nType\nContent\nOutput\n\n\n_b498c3b9\ncode\n1 + 1\n2\n\n\n_bf7520cb\nprompt\nTell me about otters 🤓\nOtters are fantastic! 🦦 They're semi-aqu\n\n\n\n\n\n\n\ndlg.delete()\n\n{'success': 'deleted \"/home/natedawg/my-project/experiment\"'}",
+    "crumbs": [
+      "solveit_client"
+    ]
+  },
+  {
+    "objectID": "index.html#cli",
+    "href": "index.html#cli",
+    "title": "solveit_client",
+    "section": "CLI",
+    "text": "CLI\nThe sic command gives you shell access to the same operations available in the Python API. It uses the SOLVEIT_URL and SOLVEIT_TOKEN environment variables (same as the Python client).\nSet SOLVEIT_URL and SOLVEIT_TOKEN to avoid passing --url and --token on every call. You can also set SOLVEIT_DIALOG to skip --name:\nexport SOLVEIT_URL='https://your-instance.solve.it.com/' # defaults to http://localhost:5001\nexport SOLVEIT_TOKEN='your-token-here' # defaults to dummy, which works only for localhost\nexport SOLVEIT_DIALOG='my-project/experiment'\nRun sic with no arguments to see available namespaces:\n\n!sic\n\nUsage: sic &lt;operation&gt; [args]\n\n client     SolveIt API client\n dialog     Dialog operations\n message    Message operations\n\n\nList available methods on a namespace with --help:\n\n!sic dialog --help\n\nUsage: sic dialog.&lt;method&gt; [args]\n\n  add_msg         Add a new message to the dialog and return it.\n  delete          Delete this dialog.\n  find_msgs       Find messages matching `re_pattern` and return as `Messages`.\n  link            Link to the dialog.\n  messages        All messages in this dialog.\n  read_msg        Read a single message by index `n` or `id` and return a `Message`.\n  reset           Reset the dialog instance.\n  run_all         Run all code messages in the dialog from top to bottom.\n  stop            Stop the dialog kernel.\n  to_xml          Return dialog messages as an XML string.\n  toggle_header   Toggle the header collapse state of the first message matching `re_pattern`.\n\n\nGet help on a specific method:\n\n!sic dialog.to_xml --help\n\nReturn dialog messages as an XML string.\n\n  --msg_type             optional limit by message type ('code', 'note', or 'prompt')\n  --nums                 Whether to show line numbers\n  --include_output       Include output in returned dict?\n  --trunc_out            Middle-out truncate code output to 100 characters (only applies if `include_output`)?\n  --trunc_in             Middle-out truncate cell content to 80 characters?\n\n\nCreate a dialog and add messages:\n\n!sic client.create_dialog --name tmp/cli_demo\n\n{\"name\": \"tmp/cli_demo\", \"mode\": \"learning\"}\n\n\n\n!sic dialog.add_msg '1 + 1' --name tmp/cli_demo\n\n{\"id\": \"_8bd98af1\", \"msg_type\": \"code\", \"content\": \"1 + 1\", \"output\": \"\"}\n\n\n\n!sic dialog.add_msg 'Hello from the CLI!' --name tmp/cli_demo --msg_type prompt\n\n{\"id\": \"_a6398f51\", \"msg_type\": \"prompt\", \"content\": \"Hello from the CLI!\", \"output\": \"&lt;output result=\\\"pending\\\" reason=\\\"incomplete\\\"/&gt;\"}\n\n\n\n!sic message.exec --name tmp/cli_demo --id _a6398f51\n\n{\"id\": \"_a6398f51\", \"msg_type\": \"prompt\", \"content\": \"Hello from the CLI!\", \"output\": \"Hey! \\ud83d\\udc4b What can I help you with?\\n\\n&lt;details class='token-usage-details'&gt;&lt;summary&gt;$0.0152&lt;/summary&gt;\\n\\n`total=16,027 | in=16,011 | out=16 | cached=97.8% | cache_new=122 | $0.0152`\\n\\n&lt;/details&gt;\"}\n\n\nList all messages in a dialog:\n\n!sic dialog.messages --name tmp/cli_demo\n\n[{\"id\": \"_a0e3ddf8\", \"msg_type\": \"code\", \"content\": \"1 + 1\", \"output\": \"\"}, {\"id\": \"_84d8d761\", \"msg_type\": \"note\", \"content\": \"Hello from the CLI!\", \"output\": \"\"}, {\"id\": \"_4a7059d5\", \"msg_type\": \"prompt\", \"content\": \"Hello from the CLI!\", \"output\": \"Hey there! \\ud83d\\udc4b What are you working on today?\\n\\n&lt;details class='token-usage-details'&gt;&lt;summary&gt;$0.0489&lt;/summary&gt;\\n\\n`total=15,941 | in=15,924 | out=17 | cached=73.2% | cache_new=4,012 | $0.0489`\\n\\n&lt;/details&gt;\"}]\n\n\nClean up:\n\n!sic dialog.delete --name tmp/cli_demo\n\n{\"success\": \"deleted \\\"/home/natedawg/tmp/cli_demo\\\"\"}",
+    "crumbs": [
+      "solveit_client"
+    ]
+  },
+  {
+    "objectID": "cli.html",
+    "href": "cli.html",
+    "title": "SolveIt CLI",
+    "section": "",
+    "text": "from fastcore.test import *\n_parse_args splits a sys.argv-style list into an operation name, positional args, and keyword args. Boolean flags like --help are handled as valueless switches.\ntest_eq(_parse_args(['sic']), (None, [], {}))\ntest_eq(_parse_args(['sic', '--help']), (None, [], {'help': 1}))\ntest_eq(_parse_args(['sic', 'dialog', '--help']), ('dialog', [], {'help': 1}))\ntest_eq(_parse_args(['sic', 'dialog.add_msg', '--help']), ('dialog.add_msg', [], {'help': True}))\ntest_eq(_parse_args(['sic', 'dialog.add_msg', 'new content', '--msg_type', 'note']),\n        ('dialog.add_msg', ['new content'], {'msg_type': 'note'}))\ntest_eq(_parse_args(['sic', 'dialog.to_xml', '--nums']), ('dialog.to_xml', [], {'nums': True}))\ntest_eq(_parse_args(['sic', 'dialog.to_xml', '--nums', '--include_output']),\n        ('dialog.to_xml', [], {'nums': True, 'include_output': True}))\ntest_eq(_parse_args(['sic', 'dialog.to_xml', '--nums', '--msg_type', 'code']),\n        ('dialog.to_xml', [], {'nums': True, 'msg_type': 'code'}))\ntest_eq(_parse_args(['sic', 'dialog.to_xml', '--msg_type', 'code', '--nums']),\n        ('dialog.to_xml', [], {'msg_type': 'code', 'nums': True}))\ntest_eq(_parse_args(['sic', 'dialog.add_msg', 'hello', '--nums', '--msg_type', 'note']),\n        ('dialog.add_msg', ['hello'], {'nums': True, 'msg_type': 'note'}))\n_ns_map maps CLI namespace strings to their corresponding classes. _to_json serializes response objects to JSON using allowlisted keys — Dialog returns name and mode, Message returns id, msg_type, content, and output.\n_resolve takes an operation string like \"dialog.add_msg\" and keyword args, constructs the appropriate object chain (SolveItClient → Dialog → Message), and returns the resolved method plus remaining kwargs. Infrastructure args (url, token, name, id) are popped and used for object construction, falling back to env vars (SOLVEIT_URL, SOLVEIT_TOKEN, SOLVEIT_DIALOG).\nmethod, clean_kw = _resolve('client.create_dialog', {'url': 'http://localhost:6001', 'name': 'folder/test'})\ntest_eq(clean_kw, {'name': 'folder/test'})\ntest_eq(method.__name__, 'create_dialog')\ntest_fail(_resolve, args=['foo', {}], exc=ValueError)\nsic_cli is the main entry point that ties parsing, resolution, and output together. It handles three levels of help display: top-level namespace listing, per-namespace method listing (via inspect.getmembers), and per-method signature display (via docments).\nsource",
+    "crumbs": [
+      "SolveIt CLI"
+    ]
+  },
+  {
+    "objectID": "cli.html#tests",
+    "href": "cli.html#tests",
+    "title": "SolveIt CLI",
+    "section": "Tests",
+    "text": "Tests\n\nres = sic_cli(['sic'])\nassert 'client' in res and SolveItClient.__doc__ in res\nassert 'dialog' in res and Dialog.__doc__ in res\nassert 'message' in res and Message.__doc__ in res\nprint(res)\n\nUsage: sic &lt;operation&gt; [args]\n\n client     SolveIt API client\n dialog     Dialog operations\n message    Message operations\n\n\n\nres = sic_cli(['sic'])\nassert 'client' in res and SolveItClient.__doc__ in res\nassert 'dialog' in res and Dialog.__doc__ in res\nassert 'message' in res and Message.__doc__ in res\nprint(res)\n\nUsage: sic &lt;operation&gt; [args]\n\n client     SolveIt API client\n dialog     Dialog operations\n message    Message operations\n\n\n\nres = sic_cli(['sic', 'dialog', '--help'])\nassert 'add_msg' in res\nassert 'messages' in res\nassert 'find_msgs' in res\nassert Dialog.__doc__ not in res\n\nres = sic_cli(['sic', 'client', '--help'])\nassert 'create_dialog' in res\n\nres = sic_cli(['sic', 'message', '--help'])\nassert 'exec' in res\nassert 'update' in res\nprint(res)\n\nUsage: sic message.&lt;method&gt; [args]\n\n  del_lines       Delete lines from `start_line` to `end_line`.\n  delete          Delete this message from its dialog.\n  exec            Execute this message and poll until completion or timeout.\n  insert_line     Insert `new_str` at line number `insert_line`.\n  link            Link to the message.\n  num_content     Return content with line numbers.\n  replace_lines   Replace lines from `start_line` to `end_line` with `new_content`.\n  str_replace     Replace `old_str` with `new_str` in message content (must match exactly once).\n  strs_replace    Replace each string in `old_strs` with corresponding string in `new_strs`.\n  update          Update message fields and return a `MsgDiff` with the change.\n\n\n\ntest_fail(sic_cli, args=[['sic', 'foo']], exc=SystemExit)\n\nUnknown namespace 'foo'. Choose from: client, dialog, message\n\n\n\nres = sic_cli(['sic', 'dialog.messages', '--help'])\nassert 'All messages' in res\n\nres = sic_cli(['sic', 'dialog.add_msg', '--help'])\nfor arg, doc in docments(Dialog.add_msg).items():\n    if arg in ('self', 'return'): continue\n    test(arg, res, operator.in_)\n\nres = sic_cli(['sic', 'dialog.to_xml', '--help'])\nfor arg, doc in docments(Dialog.to_xml).items():\n    if arg in ('self', 'return'): continue\n    test(arg, res, operator.in_)\n\nprint(res)\n\nReturn dialog messages as an XML string.\n\n  --msg_type             optional limit by message type ('code', 'note', or 'prompt')\n  --nums                 Whether to show line numbers\n  --include_output       Include output in returned dict?\n  --trunc_out            Middle-out truncate code output to 100 characters (only applies if `include_output`)?\n  --trunc_in             Middle-out truncate cell content to 80 characters?\n\n\n\n# --- setup ---\nsic_cli(['sic', 'client.create_dialog', '--name', 'tmp/cli_test2'])\n\n# --- dialog.add_msg ---\nres = json.loads(sic_cli(['sic', 'dialog.add_msg', 'hello world', '--name', 'tmp/cli_test2', '--msg_type', 'note']))\ntest_eq(res['msg_type'], 'note')\ntest_eq(res['content'], 'hello world')\nassert 'id' in res\n\n# --- dialog.messages ---\nres = json.loads(sic_cli(['sic', 'dialog.messages', '--name', 'tmp/cli_test2']))\nassert isinstance(res, list)\nassert len(res) &gt; 0\n\n# --- message.update ---\nmsg_id = res[0]['id']\nres = json.loads(sic_cli(['sic', 'message.update', '--name', 'tmp/cli_test2', '--id', msg_id, '--content', 'updated']))\ntest_eq(res['content'], 'updated')\n\n# --- message.exec (code cell) ---\ncode_msg = json.loads(sic_cli(['sic', 'dialog.add_msg', '1+1', '--name', 'tmp/cli_test2']))\nres = json.loads(sic_cli(['sic', 'message.exec', '--name', 'tmp/cli_test2', '--id', code_msg['id']]))\nassert 'output' in res\n\n# --- edge: unknown namespace ---\ntest_fail(sic_cli, args=[['sic', 'foo']], exc=SystemExit)\n\n# --- edge: unknown method ---\ntest_fail(sic_cli, args=[['sic', 'dialog.nonexistent']], exc=SystemExit)\n\n# --- cleanup ---\nsic_cli(['sic', 'dialog.delete', '--name', 'tmp/cli_test2'])\n\nUnknown namespace 'foo'. Choose from: client, dialog, message\n'dialog' has no method 'nonexistent'\n\n\n'{\"success\": \"deleted \\\\\"/home/natedawg/tmp/cli_test2\\\\\"\"}'\n\n\nsic is the CLI entry point — a thin wrapper that passes sys.argv to sic_cli and prints the result. Wire it up as a console script in pyproject.toml:\n[project.scripts]\nsic = \"solveit_client.cli:sic\"\n\nsource\n\nsic\ndef sic():\nSolveIt CLI\n\n!sic\n\nUsage: sic &lt;operation&gt; [args]\n\n client     SolveIt API client\n dialog     Dialog operations\n message    Message operations",
+    "crumbs": [
+      "SolveIt CLI"
+    ]
+  }
+]
